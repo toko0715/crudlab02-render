@@ -4,59 +4,48 @@ const db = require('./db');
 
 app.use(express.json());
 
-/* 🔹 CREATE */
-app.post('/usuarios', (req, res) => {
+app.post('/usuarios', async (req, res) => {
     const { nombre, email } = req.body;
 
-    const sql = 'INSERT INTO usuarios (nombre, email) VALUES (?, ?)';
-    db.query(sql, [nombre, email], (err, result) => {
-        if (err) return res.status(500).json(err);
+    try {
+        const result = await pool.query(
+            'INSERT INTO usuarios (nombre, email) VALUES ($1, $2) RETURNING *',
+            [nombre, email]
+        );
 
-        res.status(201).json({
-            id: result.insertId,
-            nombre,
-            email
-        });
-    });
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json(err);
+    }
 });
 
-/* 🔹 READ ALL */
-app.get('/usuarios', (req, res) => {
-    db.query('SELECT * FROM usuarios', (err, results) => {
-        if (err) return res.status(500).json(err);
-
-        res.json(results);
-    });
+app.get('/usuarios', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM usuarios');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json(err);
+    }
 });
 
-/* 🔹 READ ONE */
-app.get('/usuarios/:id', (req, res) => {
-    db.query('SELECT * FROM usuarios WHERE id = ?', [req.params.id], (err, results) => {
-        if (err) return res.status(500).json(err);
-
-        res.json(results[0]);
-    });
-});
-
-/* 🔹 UPDATE */
-app.put('/usuarios/:id', (req, res) => {
+app.put('/usuarios/:id', async (req, res) => {
     const { nombre, email } = req.body;
 
-    const sql = 'UPDATE usuarios SET nombre = ?, email = ? WHERE id = ?';
-    db.query(sql, [nombre, email, req.params.id], (err) => {
-        if (err) return res.status(500).json(err);
+    await pool.query(
+        'UPDATE usuarios SET nombre=$1, email=$2 WHERE id=$3',
+        [nombre, email, req.params.id]
+    );
 
-        res.json({ mensaje: 'Actualizado' });
-    });
+    res.json({ mensaje: 'Actualizado' });
 });
 
-/* 🔹 DELETE */
-app.delete('/usuarios/:id', (req, res) => {
-    db.query('DELETE FROM usuarios WHERE id = ?', [req.params.id], (err) => {
-        if (err) return res.status(500).json(err);
+app.delete('/usuarios/:id', async (req, res) => {
+    await pool.query(
+        'DELETE FROM usuarios WHERE id=$1',
+        [req.params.id]
+    );
 
-        res.json({ mensaje: 'Eliminado' });
-    });
+    res.json({ mensaje: 'Eliminado' });
 });
 
 const PORT = process.env.PORT || 3000;
