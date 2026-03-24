@@ -25,6 +25,13 @@ app.post('/usuarios', async (req, res) => {
     }
 });
 
+/*
+{
+  "nombre": "nombre",
+  "email": "email@gmail.com"
+}
+*/
+
 /* 🔹 READ ALL */
 app.get('/usuarios', async (req, res) => {
     try {
@@ -34,6 +41,8 @@ app.get('/usuarios', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+
 
 /* 🔹 READ ONE */
 app.get('/usuarios/:id', async (req, res) => {
@@ -72,6 +81,13 @@ app.put('/usuarios/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+/*
+{
+  "nombre": "nombre",
+  "email": "email@gmail.com"
+}
+*/
 
 /* 🔹 DELETE */
 app.delete('/usuarios/:id', async (req, res) => {
